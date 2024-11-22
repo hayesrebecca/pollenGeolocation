@@ -16,7 +16,7 @@ def clean_rbcl_data(data_filepath,
     df.to_csv(save_filepath)
     return df
 
-def plot_test_preds(y_test, preds, scaler):
+def plot_test_preds(y_test, preds, scaler, model_type):
     # Back-transform
     unscaled_y_test = scaler.inverse_transform(y_test)
     unscaled_preds = scaler.inverse_transform(preds)
@@ -44,8 +44,8 @@ def plot_test_preds(y_test, preds, scaler):
 
     # Add text for R^2 and MSE
     ax.text(
-        0.05, 0.95,  # Position relative to the axis (0.05 = 5% from the left, 0.95 = 95% from the bottom)
-        f'$R^2$: {r2:.2f}\nMSE: {mse:.2f}',  # Text to display
+        0.05, 0.05,  # Position relative to the axis (0.05 = 5% from the left, 0.95 = 95% from the bottom)
+        f'Model: {model_type}\n$R^2$: {r2:.2f}\nMSE: {mse:.2f}',  # Text to display
         transform=ax.transAxes,  # Position in axis-relative coordinates
         fontsize=12,
         verticalalignment='top',  # Align the text to the top
