@@ -51,7 +51,7 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
     ax.set_ylabel('Longitude', fontsize=12, color='black') 
 
     # Add legend
-    ax.legend(frameon=False, fontsize=10)
+    ax.legend(frameon=True, fontsize=10)
 
     # Add text for R^2 and MSE
     ax.text(
