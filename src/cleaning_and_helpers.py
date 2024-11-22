@@ -25,8 +25,8 @@ def plot_test_preds(y_test, preds, scaler):
     preds_split = np.hsplit(unscaled_preds, 2)
 
     # Calculate R^2 and MSE
-    r2 = r2_score(unscaled_y_test, unscaled_preds)
-    mse = mean_squared_error(unscaled_y_test, unscaled_preds)
+    r2 = r2_score(y_test, preds)
+    mse = mean_squared_error(y_test, preds)
     
     plt.style.use('ggplot')
 
