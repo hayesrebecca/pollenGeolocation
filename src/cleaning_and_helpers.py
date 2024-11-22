@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score, mean_squared_error
 
 def clean_rbcl_data(data_filepath,
                     save_filepath):
@@ -15,16 +16,17 @@ def clean_rbcl_data(data_filepath,
     df.to_csv(save_filepath)
     return df
 
-def plot_test_preds(y_test, preds, scaler):# Apply ggplot style
-    
+def plot_test_preds(y_test, preds, scaler):
     # Back-transform
     unscaled_y_test = scaler.inverse_transform(y_test)
-
     unscaled_preds = scaler.inverse_transform(preds)
     
     y_test_split = np.hsplit(unscaled_y_test, 2)
-
     preds_split = np.hsplit(unscaled_preds, 2)
+
+    # Calculate R^2 and MSE
+    r2 = r2_score(unscaled_y_test, unscaled_preds)
+    mse = mean_squared_error(unscaled_y_test, unscaled_preds)
     
     plt.style.use('ggplot')
 
@@ -39,6 +41,16 @@ def plot_test_preds(y_test, preds, scaler):# Apply ggplot style
     ax.set_xlabel('Latitude', fontsize=12) 
     ax.set_ylabel('Longitude', fontsize=12) 
     ax.legend(frameon=True)
+
+    # Add text for R^2 and MSE
+    ax.text(
+        0.05, 0.95,  # Position relative to the axis (0.05 = 5% from the left, 0.95 = 95% from the bottom)
+        f'$R^2$: {r2:.2f}\nMSE: {mse:.2f}',  # Text to display
+        transform=ax.transAxes,  # Position in axis-relative coordinates
+        fontsize=12,
+        verticalalignment='top',  # Align the text to the top
+        bbox=dict(boxstyle='round,pad=0.3', edgecolor='gray', facecolor='white')  # Add a text box
+    )
 
     # Show grid and make the grid lines lighter
     ax.grid(True, linestyle='--', linewidth=0.5)
