@@ -44,8 +44,8 @@ def plot_test_preds(y_test, preds, scaler, model_type):
 
     # Add text for R^2 and MSE
     ax.text(
-        0.05, 0.05,  # Position relative to the axis (0.05 = 5% from the left, 0.95 = 95% from the bottom)
-        f'Model: {model_type}\n$R^2$: {r2:.2f}\nMSE: {mse:.2f}',  # Text to display
+        0.05, 0.20,  # Position relative to the axis (0.05 = 5% from the left, 0.95 = 95% from the bottom)
+        f'{model_type}\n$R^2$: {r2:.2f}\nMSE: {mse:.2f}',  # Text to display
         transform=ax.transAxes,  # Position in axis-relative coordinates
         fontsize=12,
         verticalalignment='top',  # Align the text to the top
