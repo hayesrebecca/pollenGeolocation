@@ -16,39 +16,32 @@ def clean_rbcl_data(data_filepath,
     df.to_csv(save_filepath)
     return df
 
-def plot_test_preds(y_test, preds, scaler, model_type):
+def plot_test_preds(y_test, preds, scaler, model_type, ax):
     # Back-transform
     unscaled_y_test = scaler.inverse_transform(y_test)
     unscaled_preds = scaler.inverse_transform(preds)
-    
+
     y_test_split = np.hsplit(unscaled_y_test, 2)
     preds_split = np.hsplit(unscaled_preds, 2)
 
     # Calculate R^2 and MSE
     r2 = r2_score(y_test, preds)
     mse = mean_squared_error(y_test, preds)
-    
-    plt.style.use('ggplot')
 
-    # Create a figure
-    fig, ax = plt.subplots(figsize=(8, 6))  # Set figure size
-
-    # Plot the scatter plots
+    # Scatter plots
     ax.scatter(y_test_split[0], y_test_split[1], marker='*', s=200, label='Real Location', color='orange')
     ax.scatter(preds_split[0], preds_split[1], alpha=0.8, label='Predicted Location', color='blue')
 
-# Customize the plot to match theme_linedraw()
-    ax.set_facecolor('white')  # White panel background
+    # Customize to match `theme_linedraw()`
+    ax.set_facecolor('white')
     ax.spines['top'].set_visible(True)
     ax.spines['right'].set_visible(True)
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('black')
-
     ax.tick_params(axis='both', which='major', labelsize=10, color='black')
-    ax.grid(True, color='lightgray', linestyle='--', linewidth=0.5)  # Light grid lines
+    ax.grid(True, color='lightgray', linestyle='--', linewidth=0.5)
     ax.set_axisbelow(True)
 
-    # Add panel border
     for spine in ax.spines.values():
         spine.set_edgecolor('black')
         spine.set_linewidth(1.5)
@@ -62,17 +55,10 @@ def plot_test_preds(y_test, preds, scaler, model_type):
 
     # Add text for R^2 and MSE
     ax.text(
-        0.05, 0.20,  # Position relative to the axis (0.05 = 5% from the left, 0.95 = 95% from the bottom)
-        f'{model_type}\n$R^2$: {r2:.2f}\nMSE: {mse:.2f}',  # Text to display
-        transform=ax.transAxes,  # Position in axis-relative coordinates
+        0.05, 0.20,
+        f'{model_type}\n$R^2$: {r2:.2f}\nMSE: {mse:.2f}',
+        transform=ax.transAxes,
         fontsize=12,
-        verticalalignment='top',  # Align the text to the top
-        bbox=dict(boxstyle='round,pad=0.3', edgecolor='gray', facecolor='white')  # Add a text box
+        verticalalignment='top',
+        bbox=dict(boxstyle='round,pad=0.3', edgecolor='gray', facecolor='white')
     )
-
-    # Show grid and make the grid lines lighter
-    ax.grid(True, linestyle='--', linewidth=0.5)
-
-    # Display the plot
-    plt.tight_layout()
-    plt.show()
