@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.preprocessing import StandardScaler
 
 def clean_rbcl_data(data_filepath,
                     save_filepath):
@@ -13,3 +14,35 @@ def clean_rbcl_data(data_filepath,
     df = df.fillna(0)
     df.to_csv(save_filepath)
     return df
+
+def plot_test_preds(y_test, preds):# Apply ggplot style
+    
+    # Back-transform
+    unscaled_y_test = sc_y.inverse_transform(y_test)
+
+    unscaled_preds = sc_y.inverse_transform(preds)
+    
+    y_test_split = np.hsplit(unscaled_y_test, 2)
+
+    preds_split = np.hsplit(unscaled_preds, 2)
+    
+    plt.style.use('ggplot')
+
+    # Create a figure
+    fig, ax = plt.subplots(figsize=(8, 6))  # Set figure size
+
+    # Plot the scatter plots
+    ax.scatter(y_test_split[0], y_test_split[1], marker='*', s=200, label='Real Location', color='orange')
+    ax.scatter(preds_split[0], preds_split[1], alpha=0.8, label='Predicted Location', color='blue')
+
+    # Customize the plot
+    ax.set_xlabel('Latitude', fontsize=12) 
+    ax.set_ylabel('Longitude', fontsize=12) 
+    ax.legend(frameon=True)
+
+    # Show grid and make the grid lines lighter
+    ax.grid(True, linestyle='--', linewidth=0.5)
+
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
