@@ -37,10 +37,28 @@ def plot_test_preds(y_test, preds, scaler, model_type):
     ax.scatter(y_test_split[0], y_test_split[1], marker='*', s=200, label='Real Location', color='orange')
     ax.scatter(preds_split[0], preds_split[1], alpha=0.8, label='Predicted Location', color='blue')
 
-    # Customize the plot
-    ax.set_xlabel('Latitude', fontsize=12) 
-    ax.set_ylabel('Longitude', fontsize=12) 
-    ax.legend(frameon=True)
+# Customize the plot to match theme_linedraw()
+    ax.set_facecolor('white')  # White panel background
+    ax.spines['top'].set_visible(True)
+    ax.spines['right'].set_visible(True)
+    ax.spines['left'].set_color('black')
+    ax.spines['bottom'].set_color('black')
+
+    ax.tick_params(axis='both', which='major', labelsize=10, color='black')
+    ax.grid(True, color='lightgray', linestyle='--', linewidth=0.5)  # Light grid lines
+    ax.set_axisbelow(True)
+
+    # Add panel border
+    for spine in ax.spines.values():
+        spine.set_edgecolor('black')
+        spine.set_linewidth(1.5)
+
+    # Add labels
+    ax.set_xlabel('Latitude', fontsize=12, color='black') 
+    ax.set_ylabel('Longitude', fontsize=12, color='black') 
+
+    # Add legend
+    ax.legend(frameon=False, fontsize=10)
 
     # Add text for R^2 and MSE
     ax.text(
