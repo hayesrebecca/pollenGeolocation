@@ -62,3 +62,4 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
         verticalalignment='top',
         bbox=dict(boxstyle='round,pad=0.3', edgecolor='gray', facecolor='white')
     )
+
