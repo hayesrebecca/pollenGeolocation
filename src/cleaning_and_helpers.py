@@ -15,12 +15,12 @@ def clean_rbcl_data(data_filepath,
     df.to_csv(save_filepath)
     return df
 
-def plot_test_preds(y_test, preds):# Apply ggplot style
+def plot_test_preds(y_test, preds, scaler):# Apply ggplot style
     
     # Back-transform
-    unscaled_y_test = sc_y.inverse_transform(y_test)
+    unscaled_y_test = scaler.inverse_transform(y_test)
 
-    unscaled_preds = sc_y.inverse_transform(preds)
+    unscaled_preds = scaler.inverse_transform(preds)
     
     y_test_split = np.hsplit(unscaled_y_test, 2)
 
