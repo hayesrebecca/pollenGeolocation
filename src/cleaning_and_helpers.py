@@ -16,7 +16,7 @@ def clean_rbcl_data(data_filepath,
     df.to_csv(save_filepath)
     return df
 
-def plot_test_preds(y_test, preds, scaler, model_type, ax):
+""" def plot_test_preds(y_test, preds, scaler, model_type, ax):
     # Back-transform
     unscaled_y_test = scaler.inverse_transform(y_test)
     unscaled_preds = scaler.inverse_transform(preds)
@@ -29,7 +29,7 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
     mse = mean_squared_error(y_test, preds)
 
     # Scatter plots
-    ax.scatter(y_test_split[0], y_test_split[1], marker='*', s=200, label='Real Location', color='orange')
+    ax.scatter(y_test_split[0], y_test_split[1], marker='*', s=200, label='Real Location', color='green')
     ax.scatter(preds_split[0], preds_split[1], alpha=0.8, label='Predicted Location', color='blue')
 
     # Customize to match `theme_linedraw()`
@@ -64,5 +64,70 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
     )
 
     ax.invert_xaxis()
-    ax.invert_yaxis()
+    ax.invert_yaxis() """
 
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score, mean_squared_error
+from geopy.distance import great_circle
+
+def plot_test_preds(y_test, preds, scaler, model_type, ax):
+    # Back-transform
+    unscaled_y_test = scaler.inverse_transform(y_test)
+    unscaled_preds = scaler.inverse_transform(preds)
+
+    y_test_split = np.hsplit(unscaled_y_test, 2)
+    preds_split = np.hsplit(unscaled_preds, 2)
+
+    # Calculate great-circle distance (in km) for each point
+    distances = np.array([
+        great_circle((lat1, lon1), (lat2, lon2)).kilometers
+        for lat1, lon1, lat2, lon2 in zip(y_test_split[0].flatten(), y_test_split[1].flatten(),
+                                          preds_split[0].flatten(), preds_split[1].flatten())
+    ])
+
+    # Calculate R^2 and MSE
+    r2 = r2_score(y_test, preds)
+    mse = mean_squared_error(y_test, preds)
+
+    # Scatter plots
+    ax.scatter(y_test_split[0], y_test_split[1], marker='*', s=350, label='Real Location', color='gold', edgecolors='black')
+    sc = ax.scatter(preds_split[0], preds_split[1], c=distances, cmap='magma', alpha=0.8, label='Predicted Location')
+
+    # Add colorbar
+    cbar = plt.colorbar(sc, ax=ax)
+    cbar.set_label('Prediction Error (km)')
+
+    # Customize to match `theme_linedraw()`
+    ax.set_facecolor('white')
+    ax.spines['top'].set_visible(True)
+    ax.spines['right'].set_visible(True)
+    ax.spines['left'].set_color('black')
+    ax.spines['bottom'].set_color('black')
+    ax.tick_params(axis='both', which='major', labelsize=10, color='black')
+    ax.grid(True, color='lightgray', linestyle='--', linewidth=0.5)
+    ax.set_axisbelow(True)
+
+    for spine in ax.spines.values():
+        spine.set_edgecolor('black')
+        spine.set_linewidth(1.5)
+
+    # Add labels
+    ax.set_xlabel('Latitude', fontsize=12, color='black') 
+    ax.set_ylabel('Longitude', fontsize=12, color='black') 
+
+    # Add legend
+    ax.legend(frameon=True, fontsize=10)
+
+    # Add text for R^2 and MSE
+    ax.text(
+        0.05, 0.20,
+        f'{model_type}\n$R^2$: {r2:.2f}\nMSE: {mse:.2f}',
+        transform=ax.transAxes,
+        fontsize=12,
+        verticalalignment='top',
+        bbox=dict(boxstyle='round,pad=0.3', edgecolor='gray', facecolor='white')
+    )
+
+    ax.invert_xaxis()
+    ax.invert_yaxis()
