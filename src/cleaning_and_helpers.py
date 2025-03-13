@@ -69,30 +69,37 @@ def clean_rbcl_data(data_filepath,
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
-from geopy.distance import great_circle
+from geopy.distance import geodesic
 
 def plot_test_preds(y_test, preds, scaler, model_type, ax):
     # Back-transform
     unscaled_y_test = scaler.inverse_transform(y_test)
     unscaled_preds = scaler.inverse_transform(preds)
 
-    y_test_split = np.hsplit(unscaled_y_test, 2)
-    preds_split = np.hsplit(unscaled_preds, 2)
+    # Extract latitude and longitude separately
+    lat_test, lon_test = unscaled_y_test[:, 0], unscaled_y_test[:, 1]
+    lat_pred, lon_pred = unscaled_preds[:, 0], unscaled_preds[:, 1]
 
     # Calculate great-circle distance (in km) for each point
     distances = np.array([
-        great_circle((lat1, lon1), (lat2, lon2)).kilometers
-        for lat1, lon1, lat2, lon2 in zip(y_test_split[0].flatten(), y_test_split[1].flatten(),
-                                          preds_split[0].flatten(), preds_split[1].flatten())
+        geodesic((lat1, lon1), (lat2, lon2)).kilometers
+        for lat1, lon1, lat2, lon2 in zip(lat_test, lon_test, lat_pred, lon_pred)
     ])
+
+    # Sort points by distance (smallest first)
+    sorted_indices = np.argsort(distances)
+    lat_pred, lon_pred = lat_pred[sorted_indices], lon_pred[sorted_indices]
+    distances = distances[sorted_indices]
 
     # Calculate R^2 and MSE
     r2 = r2_score(y_test, preds)
     mse = mean_squared_error(y_test, preds)
 
-    # Scatter plots
-    ax.scatter(y_test_split[0], y_test_split[1], marker='*', s=350, label='Real Location', color='gold', edgecolors='black')
-    sc = ax.scatter(preds_split[0], preds_split[1], c=distances, cmap='magma', alpha=0.8, label='Predicted Location')
+    # Scatter plots with black edge for visibility
+    ax.scatter(lat_test, lon_test, marker='*', s=350, label='Real Location', 
+               color='gold', edgecolors='black', linewidths=0.8)
+    sc = ax.scatter(lat_pred, lon_pred, c=distances, cmap='magma', alpha=0.9, 
+                    label='Predicted Location', edgecolors='black', linewidths=0.6)
 
     # Add colorbar
     cbar = plt.colorbar(sc, ax=ax)
