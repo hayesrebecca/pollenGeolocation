@@ -70,8 +70,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
 from geopy.distance import geodesic
+import matplotlib.colors as mcolors
+from string import ascii_uppercase
 
-def plot_test_preds(y_test, preds, scaler, model_type, ax):
+def plot_test_preds(y_test, preds, scaler, model_type, ax, norm):
     # Back-transform
     unscaled_y_test = scaler.inverse_transform(y_test)
     unscaled_preds = scaler.inverse_transform(preds)
@@ -86,7 +88,7 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
         for lat1, lon1, lat2, lon2 in zip(lat_test, lon_test, lat_pred, lon_pred)
     ])
 
-    # Sort points by distance (smallest first)
+    # Sort points by distance (smallest first) for proper layering
     sorted_indices = np.argsort(distances)
     lat_pred, lon_pred = lat_pred[sorted_indices], lon_pred[sorted_indices]
     distances = distances[sorted_indices]
@@ -99,11 +101,7 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
     ax.scatter(lat_test, lon_test, marker='*', s=350, label='Real Location', 
                color='gold', edgecolors='black', linewidths=0.8)
     sc = ax.scatter(lat_pred, lon_pred, c=distances, cmap='magma', alpha=0.9, 
-                    label='Predicted Location', edgecolors='black', linewidths=0.6)
-
-    # Add colorbar
-    cbar = plt.colorbar(sc, ax=ax)
-    cbar.set_label('Prediction Error (km)')
+                    label='Predicted Location', edgecolors='black', linewidths=0.6, norm=norm)
 
     # Customize to match `theme_linedraw()`
     ax.set_facecolor('white')
@@ -128,7 +126,7 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
 
     # Add text for R^2 and MSE
     ax.text(
-        0.05, 0.20,
+        0.02, 0.25,
         f'{model_type}\n$R^2$: {r2:.2f}\nMSE: {mse:.2f}',
         transform=ax.transAxes,
         fontsize=12,
@@ -138,3 +136,5 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax):
 
     ax.invert_xaxis()
     ax.invert_yaxis()
+
+    return sc  # Return scatter plot for colorbar reference
