@@ -36,7 +36,7 @@ df
 
 
 create_beautiful_radarchart <- function(data, color = "#00AFBB", 
-                                        vlabels = colnames(data), vlcex = 1.2,
+                                        vlabels = colnames(data), vlcex = 1,
                                         title = NULL, ...){
   radarchart(
     data, axistype = 1,
@@ -47,7 +47,7 @@ create_beautiful_radarchart <- function(data, color = "#00AFBB",
     # Customize the axis
     axislabcol = "grey", 
     # Variable labels
-    vlcex = vlcex, vlabels = vlabels,
+    vlcex = vlcex, vlabels = c("R2", "Mean\n Squared\n Error", "Median\n Absolute Error", "Avg.\n Distance\n Loss"),
     # Set "Relative Minimum" at 0% and "Relative Maximum" at 100%
     caxislabels = c("", "", "", "", ""),
     title = title, ...
