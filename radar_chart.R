@@ -20,12 +20,22 @@ rownames(radar_df) <- radar_df[,1]
 radar_df <- radar_df %>%
   select(!Model)
 
+# normalise mse mae and dist by subtracting the max
+radar_df$MSE_norm <- abs(radar_df$MSE - max(radar_df$MSE))
+radar_df$MAE_norm <- abs(radar_df$MAE - max(radar_df$MAE))
+radar_df$Dist_norm <- abs(radar_df$AvgDistLoss - max(radar_df$AvgDistLoss))
+
+radar_df <- radar_df %>%
+  select(r2, MSE_norm, MAE_norm, Dist_norm)
+
+colnames(radar_df) <- c("r2", "MSE", "MAE", "AvgDistLoss")
+
 # Define the variable ranges: maximum and minimum
 max_min <- data.frame(
-  r2 = c(0.9690568, 0.7935196),
-  MSE = c(0.15507720, 0.02273946),
-  MAE = c(0.06823641, 0.01419680),
-  AvgDistLoss = c(23.406130, 7.610597)
+  r2 = c(max(radar_df$r2), min(radar_df$r2)),
+  MSE = c(max(radar_df$MSE), min(radar_df$MSE)),
+  MAE = c(max(radar_df$MAE), min(radar_df$MAE)),
+  AvgDistLoss = c(max(radar_df$AvgDistLoss), min(radar_df$AvgDistLoss))
 )
 rownames(max_min) <- c("Max", "Min")
 
