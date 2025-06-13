@@ -10,7 +10,7 @@ source("lab_paths.R")
 local.path
 
 setwd(local.path)
-setwd('pnw_survey_saved')
+setwd('sunflower_saved')
 
 
 
@@ -37,9 +37,7 @@ source("../pnw_survey/data_prep/sequence_prep/src/misc.R")
 # qza.rbcl.path  <- "SI_pipeline/merged/RBCL/final"
 
 # For now, just run 2023 until we have the rest of the seq data
-qza.rbcl.path  <- "pipeline/R2023/RBCL/final"
-
-
+qza.rbcl.path  <- "ffar_pipeline/merged/RBCL/final"
 
 
 ## function from: https://stackoverflow.com/questions/38570074/phylogenetics-in-r-collapsing-descendant-tips-of-an-internal-node
@@ -54,49 +52,53 @@ drop_dupes <- function(tree, thres=1e-5){
 ## ***********************************************************************
 ## RBCL
 ## ***********************************************************************
-## R0
-weightedUFrbclqzaR0 <- read_qza(file.path(qza.rbcl.path,
-                                          'core_metricsRBCL/weighted_unifrac_distance_matrix.qza'))
+# ## R0
+# weightedUFrbclqzaR0 <- read_qza(file.path(qza.rbcl.path,
+#                                           'core_metricsRBCL/weighted_unifrac_distance_matrix.qza'))
+# 
+# unweightedUFrbclqzaR0 <- read_qza(file.path(qza.rbcl.path,
+#                                             'core_metricsRBCL/unweighted_unifrac_distance_matrix.qza'))
+# # 
+# # ## access data inside artifacts
+# # 
+# # # RBCL
+# # # R0
+# wphylo.dist.rbclR0 <- weightedUFrbclqzaR0$data
+# phylo.dist.rbclR0 <- unweightedUFrbclqzaR0$data
+# 
+# # 
+# # #Note, when taxonomy is imported, a single string is returned along
+# # #with a confidence score.  For many analysis we will want to break up
+# # #this string and for that purpose the parse_taxonomy() function is
+# # #provided:
+# # 
+# # # R0
+# taxonomyRBCLR0 <-
+#   read_qza("pipeline/R2023/RBCL/final/core_metricsRBCL/rarefied_table.qza")
+# taxonomyRBCLR0 <- taxonomyRBCLR0$data
+# 
+# # 
+# # #Phyloseq tutorials here: https://joey711.github.io/phyloseq/
+# # 
+# # # ****CHECK PATHS BELOW ONCE FINISH RBCL PIPELINE****
+# # 
+# # ## NEED TO CHECK whether this actually has all of the samples and tips
+# # ## TODO: I think I need to rerun the pipeline steps to make sure the correct qzas are used
+# # 
+# # #RBCL 2023 phylogeny
+# physeqRBCLR0 <- qza_to_phyloseq(
+#   features="pipeline/R2023/RBCL/final/core_metricsRBCL/rarefied_table.qza",
+#   tree="pipeline/R2023/RBCL/rooted-treeRBCL2023.qza",
+#   "pipeline/R2023/RBCL/taxonomyRBCL.qza",
+#   metadata = "pipeline/R2023/maps/pnw2023mapRBCL.txt"
+# )
+# physeqRBCLR0
+# plot(physeqRBCLR0@phy_tree, show.tip.label = FALSE)
+# # 
 
-unweightedUFrbclqzaR0 <- read_qza(file.path(qza.rbcl.path,
-                                            'core_metricsRBCL/unweighted_unifrac_distance_matrix.qza'))
-# 
-# ## access data inside artifacts
-# 
-# # RBCL
-# # R0
-wphylo.dist.rbclR0 <- weightedUFrbclqzaR0$data
-phylo.dist.rbclR0 <- unweightedUFrbclqzaR0$data
+ffar <- read.csv("../../Documents/1ROTATION kern lab/prepBeeRBCL/FFARspec.csv")
 
-# 
-# #Note, when taxonomy is imported, a single string is returned along
-# #with a confidence score.  For many analysis we will want to break up
-# #this string and for that purpose the parse_taxonomy() function is
-# #provided:
-# 
-# # R0
-taxonomyRBCLR0 <-
-  read_qza("pipeline/R2023/RBCL/final/core_metricsRBCL/rarefied_table.qza")
-taxonomyRBCLR0 <- taxonomyRBCLR0$data
 
-# 
-# #Phyloseq tutorials here: https://joey711.github.io/phyloseq/
-# 
-# # ****CHECK PATHS BELOW ONCE FINISH RBCL PIPELINE****
-# 
-# ## NEED TO CHECK whether this actually has all of the samples and tips
-# ## TODO: I think I need to rerun the pipeline steps to make sure the correct qzas are used
-# 
-# #RBCL 2023 phylogeny
-physeqRBCLR0 <- qza_to_phyloseq(
-  features="pipeline/R2023/RBCL/final/core_metricsRBCL/rarefied_table.qza",
-  tree="pipeline/R2023/RBCL/rooted-treeRBCL2023.qza",
-  "pipeline/R2023/RBCL/taxonomyRBCL.qza",
-  metadata = "pipeline/R2023/maps/pnw2023mapRBCL.txt"
-)
-physeqRBCLR0
-plot(physeqRBCLR0@phy_tree, show.tip.label = FALSE)
-# 
 
 # ## ***********************************************************************
 # 
