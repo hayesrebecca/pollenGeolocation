@@ -5,15 +5,27 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score, mean_squared_error
 
 def clean_rbcl_data(data_filepath,
-                    save_filepath):
-    df = pd.read_csv(data_filepath, low_memory=False)
-    df['GenSp'] = df['Genus'] + '.' + df['Species']
-    rbcl_cols = [col for col in df if col.startswith('RBCL')]
-    my_cols = ['UniqueID', 'Family', 'Genus', 'GenSp', 'Site', 'Lat', 'Long'] + rbcl_cols
-    df = df.reindex(columns=my_cols)
-    df = df.dropna(subset=[i for i in rbcl_cols], how='all')
-    df = df.fillna(0)
-    df.to_csv(save_filepath)
+                    save_filepath,
+                    format="utf-8"):
+    df = pd.read_csv(data_filepath, low_memory=False, encoding=format)
+
+    if "UniqueID" in df.columns:
+        df['GenSp'] = df['Genus'] + '.' + df['Species']
+        rbcl_cols = [col for col in df if col.startswith('RBCL')]
+        my_cols = ['UniqueID', 'Family', 'Genus', 'GenSp', 'Site', 'Lat', 'Long'] + rbcl_cols
+        df = df.reindex(columns=my_cols)
+        df = df.dropna(subset=[i for i in rbcl_cols], how='all')
+        df = df.fillna(0)
+        df.to_csv(save_filepath)
+    else:
+        df["UniqueID"] = df["SampleID"]
+        df['GenSp'] = df['Genus'] + '.' + df['Species']
+        rbcl_cols = [col for col in df if col.startswith('RBCL')]
+        my_cols = ['UniqueID', 'Family', 'Genus', 'GenSp', 'Site', 'Lat', 'Long'] + rbcl_cols
+        df = df.reindex(columns=my_cols)
+        df = df.dropna(subset=[i for i in rbcl_cols], how='all')
+        df = df.fillna(0)
+        df.to_csv(save_filepath)
     return df
 
 """ def plot_test_preds(y_test, preds, scaler, model_type, ax):
