@@ -14,11 +14,11 @@ setwd('pnw_survey_saved')
 
 
 
-if (!require("BiocManager", quietly = TRUE)){install.packages("BiocManager")}
+#if (!require("BiocManager", quietly = TRUE)){install.packages("BiocManager")}
 ##BiocManager::install("TreeSummarizedExperiment")
 library(TreeSummarizedExperiment)
-if (!requireNamespace("devtools", quietly = TRUE)){install.packages("devtools")}
-devtools::install_github("jbisanz/qiime2R")
+#if (!requireNamespace("devtools", quietly = TRUE)){install.packages("devtools")}
+#devtools::install_github("jbisanz/qiime2R")
 library(qiime2R)
 
 library(tidyr)
@@ -26,11 +26,13 @@ library(dplyr)
 library(bipartite)
 library(phyloseq)
 library(TreeTools)
-library(devtools)
+#library(devtools)
 library(ape)
 library(picante)
 
 source("../pnw_survey/data_prep/sequence_prep/src/misc.R")
+
+pollen_type="taxonomy"
 
 # Run again with merged runs!
 ## reading artifacts
@@ -106,104 +108,222 @@ plot(physeqRBCLR0@phy_tree, show.tip.label = FALSE)
 ## we want to switch to actual DNA seqs
 
 library(Biostrings)
-
-# Replace with your actual file path
-fasta_file <- "pipeline/R2023/RBCL/rep-seqs-RBCL.fasta"
-
-# Read the fasta file
-fasta_seqs <- readDNAStringSet(fasta_file)
-
-# Convert to data.frame
-fasta_df <- data.frame(
-  FeatureID = names(fasta_seqs),
-  Sequence = as.character(fasta_seqs),
-  stringsAsFactors = FALSE
-)
-
-
-# ## add 16s/rbcl to make the columns easy to find when they are added
-# ## to the specimen data
-# 
-#feature.2.tax.rbcl$Taxon  <- gsub(" ", "_", feature.2.tax.rbcl$Taxon)
-fasta_df$Sequence <- paste("RBCL", fasta_df$Sequence,
-                                  sep=':')
-## R0
-tree.rbclR0 <- phy_tree(physeqRBCLR0, errorIfNULL=TRUE)
-
-# First, filter fasta_df to only those in the tree
-fasta_df_filtered <- fasta_df[fasta_df$FeatureID %in% tree.rbclR0$tip.label, ]
-
-# Then reassign the tip labels using match on the filtered set
-tree.rbclR0$tip.label <- fasta_df_filtered$Sequence[
-  match(tree.rbclR0$tip.label, fasta_df_filtered$FeatureID)
-]
-
-
-#fasta_df <- fasta_df[fasta_df$FeatureID %in% tree.rbclR0$tip.label,]
-
-# ## ***********************************************************************
-# ## rbcl networks
-# ## ***********************************************************************
-# 
-#R0
-indiv.comm.rbclR0 <-
+if(pollen_type=="raw"){
+  # Replace with your actual file path
+  fasta_file <- "pipeline/R2023/RBCL/rep-seqs-RBCL.fasta"
+  
+  # Read the fasta file
+  fasta_seqs <- readDNAStringSet(fasta_file)
+  
+  # Convert to data.frame
+  fasta_df <- data.frame(
+    FeatureID = names(fasta_seqs),
+    Sequence = as.character(fasta_seqs),
+    stringsAsFactors = FALSE
+  )
+  
+  
+  # ## add 16s/rbcl to make the columns easy to find when they are added
+  # ## to the specimen data
+  # 
+  #feature.2.tax.rbcl$Taxon  <- gsub(" ", "_", feature.2.tax.rbcl$Taxon)
+  fasta_df$Sequence <- paste("RBCL", fasta_df$Sequence,
+                                    sep=':')
+  ## R0
+  tree.rbclR0 <- phy_tree(physeqRBCLR0, errorIfNULL=TRUE)
+  
+  # First, filter fasta_df to only those in the tree
+  fasta_df_filtered <- fasta_df[fasta_df$FeatureID %in% tree.rbclR0$tip.label, ]
+  
+  # Then reassign the tip labels using match on the filtered set
+  tree.rbclR0$tip.label <- fasta_df_filtered$Sequence[
+    match(tree.rbclR0$tip.label, fasta_df_filtered$FeatureID)
+  ]
+  
+  
+  #fasta_df <- fasta_df[fasta_df$FeatureID %in% tree.rbclR0$tip.label,]
+  
+  # ## ***********************************************************************
+  # ## rbcl networks
+  # ## ***********************************************************************
+  # 
+  #R0
+  indiv.comm.rbclR0 <-
+      bipartite::empty(catchDups(makeComm(taxonomyRBCLR0,
+                                          fasta_df_filtered,
+                                          feature.col="FeatureID")))
+                                          # changed to "Feature.ID" to match 'makeComm' function
+  colnames(indiv.comm.rbclR0) <- fasta_df_filtered$Sequence
+  indiv.comm.rbclR0 <- indiv.comm.rbclR0/rowSums(indiv.comm.rbclR0)
+  
+  bees.rbcl <- c(rownames(indiv.comm.rbclR0))
+  # 
+  comms <- list(indiv.comm.rbclR0)
+  # 
+  
+  species.rbcl <- unique(unlist(sapply(comms, colnames)))
+  # 
+  merged.comm.rbcl <- plyr::rbind.fill(lapply(comms, as.data.frame))
+  # 
+  # ## check with number of columns against number of unique species
+  dim(merged.comm.rbcl)
+  length(species.rbcl)
+  # 
+  rownames(merged.comm.rbcl) <- bees.rbcl
+  # 
+  megaRBCLdata <- read_qza("pipeline/R2023/RBCL/rooted-treeRBCL2023.qza")
+  tree.rbcl <- megaRBCLdata$data
+  # 
+  tree.rbcl <- tip_glom(tree.rbcl, h=0.1)
+  # 
+  tree.rbcl <- drop_dupes(tree.rbcl, thres=1e-5)
+  # 
+  tree.rbcl$tip.label <- fasta_df_filtered$Sequence[
+    match(tree.rbcl$tip.label, fasta_df_filtered$FeatureID)
+  ]
+  
+  ## ***********************************************************************
+  ## Make mega dataset
+  ## ***********************************************************************
+  
+  ## spec already includes parasite data
+  load('../pnw_survey/data/spec_net_fire.Rdata')
+  
+  indiv.comm.rbcl <- as.data.frame(merged.comm.rbcl)
+  pollen <- colnames(indiv.comm.rbcl)
+  indiv.comm.rbcl$SampleID <- rownames(indiv.comm.rbcl)
+  indiv.comm.rbcl$SampleID <- sub("^", "NCASI-S", indiv.comm.rbcl$SampleID)
+  
+  
+  spec.net <-cbind(spec.net, indiv.comm.rbcl[, pollen][match(spec.net$SampleID,
+                             indiv.comm.rbcl$SampleID),])
+  
+  
+  ## check for duplicates
+  #any(duplicated(spec.net$UniqueID))
+  
+  save(spec.net, file= "../pollenGeolocation/data/NCASIpollen_raw.Rdata")
+  
+  write.csv(spec.net, file= "../pollenGeolocation/data/NCASIpollen_raw.csv",
+            row.names=FALSE)
+} else {
+  
+  # ## ***********************************************************************
+  # 
+  feature.2.tax.rbcl <-
+    read.table("pipeline/R2023/RBCL/taxonomyRBCL.txt", sep="\t",
+               header=TRUE)
+  # 
+  # ## ## R knows to ignore the row in the txt with a # (see defaults read.table)
+  # 
+  # ## add 16s/rbcl to make the columns easy to find when they are added
+  # ## to the specimen data
+  # 
+  feature.2.tax.rbcl$Taxon  <- gsub(" ", "_", feature.2.tax.rbcl$Taxon)
+  feature.2.tax.rbcl$Taxon <- paste("RBCL", feature.2.tax.rbcl$Taxon,
+                                    sep=':')
+  ## R0
+  tree.rbclR0 <- phy_tree(physeqRBCLR0, errorIfNULL=TRUE)
+  
+  # 
+  ## match the tip labs to the table with feature ID and Taxon
+  ## R0
+  tree.rbclR0$tip.label  <-  feature.2.tax.rbcl$Taxon[
+    match(tree.rbclR0$tip.label,
+          feature.2.tax.rbcl$Feature.ID)]
+  
+  # ## ***********************************************************************
+  # ## rbcl networks
+  # ## ***********************************************************************
+  # 
+  #R0
+  indiv.comm.rbclR0 <-
     bipartite::empty(catchDups(makeComm(taxonomyRBCLR0,
-                                        fasta_df_filtered,
-                                        feature.col="FeatureID")))
-                                        # changed to "Feature.ID" to match 'makeComm' function
-colnames(indiv.comm.rbclR0) <- fasta_df_filtered$Sequence
-indiv.comm.rbclR0 <- indiv.comm.rbclR0/rowSums(indiv.comm.rbclR0)
+                                        feature.2.tax.rbcl,
+                                        feature.col="Feature.ID")))
+  # changed to "Feature.ID" to match 'makeComm' function
+  # 
+  indiv.comm.rbclR0 <- indiv.comm.rbclR0/rowSums(indiv.comm.rbclR0)
+  
+  bees.rbcl <- c(rownames(indiv.comm.rbclR0))
+  # 
+  comms <- list(indiv.comm.rbclR0)
+  # 
+  
+  species.rbcl <- unique(unlist(sapply(comms, colnames)))
+  # 
+  merged.comm.rbcl <- plyr::rbind.fill(lapply(comms, as.data.frame))
+  # 
+  # ## check with number of columns against number of unique species
+  dim(merged.comm.rbcl)
+  length(species.rbcl)
+  # 
+  rownames(merged.comm.rbcl) <- bees.rbcl
+  # 
+  megaRBCLdata <- read_qza("pipeline/R2023/RBCL/rooted-treeRBCL2023.qza")
+  tree.rbcl <- megaRBCLdata$data
+  # 
+  tree.rbcl <- tip_glom(tree.rbcl, h=0.1)
+  # 
+  tree.rbcl <- drop_dupes(tree.rbcl, thres=1e-5)
+  # 
+  tree.rbcl$tip.label  <-  feature.2.tax.rbcl$Taxon[match(tree.rbcl$tip.label,
+                                                          feature.2.tax.rbcl$Feature.ID)]
+  
+  
+  ## ***********************************************************************
+  ## Make mega dataset
+  ## ***********************************************************************
+  
+  ## spec already includes parasite data
+  load('../pnw_survey/data/spec_net_fire.Rdata')
+  
+  indiv.comm.rbcl <- as.data.frame(merged.comm.rbcl)
+  pollen <- colnames(indiv.comm.rbcl)
+  indiv.comm.rbcl$SampleID <- rownames(indiv.comm.rbcl)
+  indiv.comm.rbcl$SampleID <- sub("^", "NCASI-S", indiv.comm.rbcl$SampleID)
+  
+  
+  ncasi.pollen <-cbind(spec.net, indiv.comm.rbcl[, pollen][match(spec.net$SampleID,
+                                                             indiv.comm.rbcl$SampleID),])
+  
+  ncasi.pollen$`RBCL:Plantae` <- NULL
+  
+  fix_name_regex <- function(name) {
+    # 1. Remove trailing "."
+    name <- sub("sp\\.$", "sp", name)
+    
+    # 2. If it matches "RBCL:Family" only, add "_sp"
+    # - starts with "RBCL:"
+    # - has no underscore after the family name
+    name <- sub("^(RBCL:[^:_]+)$", "\\1_sp", name)
+    
+    return(name)
+  }
+  
+  
+  new_cols <- sapply(names(ncasi.pollen), fix_name_regex)
+  new_cols
+  
+  
+  ## Fix only RBCL columns
+  rbcl_cols <- names(ncasi.pollen)[startsWith(names(ncasi.pollen), "RBCL")]
+  other_cols <- names(ncasi.pollen)[!startsWith(names(ncasi.pollen), "RBCL")]
+  
+  fixed_rbcl <- sapply(rbcl_cols, fix_name_regex)
+  
+  # Combine: keep same order for other columns + fixed RBCLs
+  new_colnames <- c(other_cols, fixed_rbcl)
+  
+  colnames(ncasi.pollen) <- new_colnames
+  
+  colnames(ncasi.pollen)
+  
+  sort(names(ncasi.pollen))
+  save(ncasi.pollen, file= "../pollenGeolocation/data/NCASIpollen_tax.Rdata")
 
-bees.rbcl <- c(rownames(indiv.comm.rbclR0))
-# 
-comms <- list(indiv.comm.rbclR0)
-# 
-
-species.rbcl <- unique(unlist(sapply(comms, colnames)))
-# 
-merged.comm.rbcl <- plyr::rbind.fill(lapply(comms, as.data.frame))
-# 
-# ## check with number of columns against number of unique species
-dim(merged.comm.rbcl)
-length(species.rbcl)
-# 
-rownames(merged.comm.rbcl) <- bees.rbcl
-# 
-megaRBCLdata <- read_qza("pipeline/R2023/RBCL/rooted-treeRBCL2023.qza")
-tree.rbcl <- megaRBCLdata$data
-# 
-tree.rbcl <- tip_glom(tree.rbcl, h=0.1)
-# 
-tree.rbcl <- drop_dupes(tree.rbcl, thres=1e-5)
-# 
-tree.rbcl$tip.label <- fasta_df_filtered$Sequence[
-  match(tree.rbcl$tip.label, fasta_df_filtered$FeatureID)
-]
-
-## ***********************************************************************
-## Make mega dataset
-## ***********************************************************************
-
-## spec already includes parasite data
-load('../pnw_survey/data/spec_net_fire.Rdata')
-
-indiv.comm.rbcl <- as.data.frame(merged.comm.rbcl)
-pollen <- colnames(indiv.comm.rbcl)
-indiv.comm.rbcl$SampleID <- rownames(indiv.comm.rbcl)
-indiv.comm.rbcl$SampleID <- sub("^", "NCASI-S", indiv.comm.rbcl$SampleID)
-
-
-spec.net <-cbind(spec.net, indiv.comm.rbcl[, pollen][match(spec.net$SampleID,
-                           indiv.comm.rbcl$SampleID),])
-
-
-## check for duplicates
-#any(duplicated(spec.net$UniqueID))
-
-save(spec.net, file= "../pollenGeolocation/data/NCASIpollen.Rdata")
-
-write.csv(spec.net, file= "../pollenGeolocation/data/NCASIpollen.csv",
-          row.names=FALSE)
-
-
-
+  write.csv(ncasi.pollen, file= "../pollenGeolocation/data/NCASIpollen_tax.csv",
+            row.names=FALSE)
+}  
+  
+  
