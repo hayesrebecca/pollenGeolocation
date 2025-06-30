@@ -13,11 +13,11 @@ setwd('sunflower_saved')
 
 
 
-if (!require("BiocManager", quietly = TRUE)){install.packages("BiocManager")}
+#if (!require("BiocManager", quietly = TRUE)){install.packages("BiocManager")}
 ##BiocManager::install("TreeSummarizedExperiment")
 library(TreeSummarizedExperiment)
-if (!requireNamespace("devtools", quietly = TRUE)){install.packages("devtools")}
-devtools::install_github("jbisanz/qiime2R")
+#if (!requireNamespace("devtools", quietly = TRUE)){install.packages("devtools")}
+#devtools::install_github("jbisanz/qiime2R")
 library(qiime2R)
 
 library(tidyr)
@@ -25,7 +25,7 @@ library(dplyr)
 library(bipartite)
 library(phyloseq)
 library(TreeTools)
-library(devtools)
+#library(devtools)
 library(ape)
 library(picante)
 
@@ -495,7 +495,7 @@ if(pollen_type=="raw"){
       # Case 3: Family_sp._X => Family
     } else if (str_detect(base, "^[^_]+_sp\\._[A-Z]+$")) {
       parts <- unlist(str_split(base, "_"))
-      new <- parts[1]
+      new <- paste0(parts[1], "_sp")
       
     } else {
       new <- base
@@ -520,11 +520,40 @@ if(pollen_type=="raw"){
   colnames(ffar.pollen)
   
   
-  save(ffar.pollen, file= "../pollenGeolocation/data/FFARpollen_tax.Rdata")
-
-  write.csv(ffar.pollen, file= "../pollenGeolocation/data/FFARpollen_tax.csv",
-            row.names=FALSE)
+  
+  
+  # save(ffar.pollen, file= "../pollenGeolocation/data/FFARpollen_tax.Rdata")
+  # 
+  # write.csv(ffar.pollen, file= "../pollenGeolocation/data/FFARpollen_tax.csv",
+  #           row.names=FALSE)
   
   ## save(wphylo.dist.16s, phylo.dist.16s, wphylo.dist.rbcl, phylo.dist.rbcl,
   ##      file="~/Dropbox/sunflower/data/phyloDistanceMats.Rdata")
+
+
+combine_duplicate_cols <- function(df) {
+  # Find duplicated names
+  dupes <- unique(colnames(df)[duplicated(colnames(df))])
+  
+  # Combine duplicated columns
+  for (d in dupes) {
+    cols <- which(colnames(df) == d)
+    combined <- rowSums(df[, cols, drop = FALSE], na.rm = TRUE)
+    
+    # Keep only one column with the sum
+    df <- df[, -cols, drop = FALSE]
+    df[[d]] <- combined
+  }
+  
+  df
+}
+
+df_combined <- combine_duplicate_cols(ffar.pollen)
+
+save(df_combined, file= "../pollenGeolocation/data/FFARpollen_tax.Rdata")
+ 
+write.csv(df_combined, file= "../pollenGeolocation/data/FFARpollen_tax.csv",
+           row.names=FALSE)
+
+
 }
