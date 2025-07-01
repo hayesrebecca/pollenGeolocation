@@ -550,6 +550,10 @@ combine_duplicate_cols <- function(df) {
 
 df_combined <- combine_duplicate_cols(ffar.pollen)
 
+# drop rows that are NA
+df_combined <- df_combined %>%
+  filter(!grepl("NA", rownames(.)))
+
 save(df_combined, file= "../pollenGeolocation/data/taxonomic/FFARpollen_tax.Rdata")
  
 write.csv(df_combined, file= "../pollenGeolocation/data/taxonomic/FFARpollen_tax.csv",
@@ -557,3 +561,5 @@ write.csv(df_combined, file= "../pollenGeolocation/data/taxonomic/FFARpollen_tax
 
 
 }
+
+
