@@ -15,7 +15,7 @@ setwd('skyIslands_saved')
 ## pollen_type = 'raw' if you want raw dna sequences as features
 ## pollen_type = 'taxonomy' if you want the classified dna seqs
 
-pollen_type = 'taxonomy'
+pollen_type = 'raw'
 
 #if (!require("BiocManager", quietly = TRUE)){install.packages("BiocManager")}
 ##BiocManager::install("TreeSummarizedExperiment")
@@ -40,6 +40,13 @@ source("../skyIslands/dataPrep/src/misc.R")
 #qza.16s.path  <- "SI_pipeline/merged/16s/final"
 qza.rbcl.path  <- "SI_pipeline/merged/RBCL/final"
 
+## function from: https://stackoverflow.com/questions/38570074/phylogenetics-in-r-collapsing-descendant-tips-of-an-internal-node
+
+drop_dupes <- function(tree, thres=1e-5){
+  tips <- which(tree$edge[,2] %in% 1:Ntip(tree))
+  toDrop <- tree$edge.length[tips] < thres
+  drop.tip(tree,tree$tip.label[toDrop])
+}
 
 ## ***********************************************************************
 ## RBCL
@@ -266,9 +273,9 @@ if(pollen_type=="raw"){
   si.rbcl <-cbind(si, indiv.comm.rbcl[, pollen][match(si$UniqueID,
                                                           indiv.comm.rbcl$UniqueID),])
   
-  save(si.rbcl, file= "../pollenGeolocation/data/SIpollen_raw.Rdata")
+  save(si.rbcl, file= "../pollenGeolocation/data/raw/SIpollen_raw.Rdata")
   
-  write.csv(si.rbcl, file= "../pollenGeolocation/data/SIpollen_raw.csv",
+  write.csv(si.rbcl, file= "../pollenGeolocation/data/raw/SIpollen_raw.csv",
             row.names=FALSE)
 } else {
   # 
@@ -350,9 +357,9 @@ if(pollen_type=="raw"){
   
   si.pollen$`RBCL:BACTERIA` <- NULL
   
-  save(si.pollen, file= "../pollenGeolocation/data/SIpollen_tax.Rdata")
+  save(si.pollen, file= "../pollenGeolocation/data/taxonomic/SIpollen_tax.Rdata")
   
-  write.csv(si.pollen, file= "../pollenGeolocation/data/SIpollen_tax.csv",
+  write.csv(si.pollen, file= "../pollenGeolocation/data/taxonomic/SIpollen_tax.csv",
             row.names=FALSE)
   
 }

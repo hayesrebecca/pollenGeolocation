@@ -357,9 +357,9 @@ if(pollen_type=="raw"){
   ffar.rbcl <-cbind(ffar, indiv.comm.rbcl[, pollen][match(ffar$UniqueID,
                                                           indiv.comm.rbcl$UniqueID),])
   
-  save(ffar.rbcl, file= "../pollenGeolocation/data/FFARpollen_raw.Rdata")
+  save(ffar.rbcl, file= "../pollenGeolocation/data/raw/FFARpollen_raw.Rdata")
   
-  write.csv(ffar.rbcl, file= "../pollenGeolocation/data/FFARpollen_raw.csv",
+  write.csv(ffar.rbcl, file= "../pollenGeolocation/data/raw/FFARpollen_raw.csv",
             row.names=FALSE)
   
 } else{
@@ -550,9 +550,9 @@ combine_duplicate_cols <- function(df) {
 
 df_combined <- combine_duplicate_cols(ffar.pollen)
 
-save(df_combined, file= "../pollenGeolocation/data/FFARpollen_tax.Rdata")
+save(df_combined, file= "../pollenGeolocation/data/taxonomic/FFARpollen_tax.Rdata")
  
-write.csv(df_combined, file= "../pollenGeolocation/data/FFARpollen_tax.csv",
+write.csv(df_combined, file= "../pollenGeolocation/data/taxonomic/FFARpollen_tax.csv",
            row.names=FALSE)
 
 

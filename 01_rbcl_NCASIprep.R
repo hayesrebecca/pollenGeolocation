@@ -32,7 +32,7 @@ library(picante)
 
 source("../pnw_survey/data_prep/sequence_prep/src/misc.R")
 
-pollen_type="taxonomy"
+pollen_type="raw"
 
 # Run again with merged runs!
 ## reading artifacts
@@ -202,9 +202,9 @@ if(pollen_type=="raw"){
   ## check for duplicates
   #any(duplicated(spec.net$UniqueID))
   
-  save(spec.net, file= "../pollenGeolocation/data/NCASIpollen_raw.Rdata")
+  save(spec.net, file= "../pollenGeolocation/data/raw/NCASIpollen_raw.Rdata")
   
-  write.csv(spec.net, file= "../pollenGeolocation/data/NCASIpollen_raw.csv",
+  write.csv(spec.net, file= "../pollenGeolocation/data/raw/NCASIpollen_raw.csv",
             row.names=FALSE)
 } else {
   
@@ -320,9 +320,9 @@ if(pollen_type=="raw"){
   colnames(ncasi.pollen)
   
   sort(names(ncasi.pollen))
-  save(ncasi.pollen, file= "../pollenGeolocation/data/NCASIpollen_tax.Rdata")
+  save(ncasi.pollen, file= "../pollenGeolocation/data/taxonomic/NCASIpollen_tax.Rdata")
 
-  write.csv(ncasi.pollen, file= "../pollenGeolocation/data/NCASIpollen_tax.csv",
+  write.csv(ncasi.pollen, file= "../pollenGeolocation/data/taxonomic/NCASIpollen_tax.csv",
             row.names=FALSE)
 }  
   
