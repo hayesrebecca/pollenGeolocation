@@ -154,6 +154,7 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax, norm):
 # -----------------------------
 # Function to split each project
 # -----------------------------
+from sklearn.model_selection import train_test_split
 def split_project(X, y, test_size, random_state):
     return train_test_split(X, y, test_size=test_size, random_state=random_state)
 
@@ -275,5 +276,6 @@ def evaluate_model_per_project(name, model_class, X_train, y_train, X_test, y_te
         results["per_project"] = project_metrics
 
     return results
+
 
 
