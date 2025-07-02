@@ -205,3 +205,75 @@ def evaluate_model(name, model_class, best_params, X_train, y_train, X_test, y_t
         "preds": preds
     }
 
+from sklearn.metrics import r2_score, mean_squared_error, median_absolute_error
+from geopy.distance import geodesic
+import numpy as np
+import pandas as pd
+
+def evaluate_model_per_project(name, model_class, X_train, y_train, X_test, y_test, project_test=None):
+    """
+    Initialize, fit, predict, and evaluate a model with default hyperparameters per project.
+    """
+    print(f"Evaluating {name}...")
+
+    # If it’s a lambda or a class, calling it gets you a fresh model
+    model = model_class()
+
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+
+    # Overall metrics
+    r2 = r2_score(y_test, preds)
+    rmse = mean_squared_error(y_test, preds, squared=False)
+    mae = median_absolute_error(y_test, preds)
+    distances = [geodesic(real, pred).kilometers for real, pred in zip(y_test, preds)]
+    avg_dist = np.mean(distances)
+    se_dist = np.std(distances)
+
+    results = {
+        "model": name,
+        "r2": r2,
+        "rmse": rmse,
+        "mae": mae,
+        "avg_km_error": avg_dist,
+        "se_km_error": se_dist,
+        "preds": preds
+    }
+
+    # ---- Compute per-project metrics ----
+    if project_test is not None:
+        df = pd.DataFrame({
+            "y_true_lat": [y[0] for y in y_test],
+            "y_true_lon": [y[1] for y in y_test],
+            "y_pred_lat": [y[0] for y in preds],
+            "y_pred_lon": [y[1] for y in preds],
+            "project": project_test
+        })
+
+        project_metrics = []
+
+        for project_id, group in df.groupby("project"):
+            y_true_proj = group[["y_true_lat", "y_true_lon"]].values
+            y_pred_proj = group[["y_pred_lat", "y_pred_lon"]].values
+
+            r2_p = r2_score(y_true_proj, y_pred_proj)
+            rmse_p = mean_squared_error(y_true_proj, y_pred_proj, squared=False)
+            mae_p = median_absolute_error(y_true_proj, y_pred_proj)
+            distances_p = [geodesic(real, pred).kilometers for real, pred in zip(y_true_proj, y_pred_proj)]
+            avg_dist_p = np.mean(distances_p)
+            se_dist_p = np.std(distances_p)
+
+            project_metrics.append({
+                "project": project_id,
+                "r2": r2_p,
+                "rmse": rmse_p,
+                "mae": mae_p,
+                "avg_km_error": avg_dist_p,
+                "se_km_error": se_dist_p
+            })
+
+        results["per_project"] = project_metrics
+
+    return results
+
+
