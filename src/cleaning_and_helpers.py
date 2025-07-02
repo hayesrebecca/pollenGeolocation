@@ -150,3 +150,58 @@ def plot_test_preds(y_test, preds, scaler, model_type, ax, norm):
     ax.invert_yaxis()
 
     return sc  # Return scatter plot for colorbar reference
+
+# -----------------------------
+# Function to split each project
+# -----------------------------
+def split_project(X, y, test_size, random_state):
+    return train_test_split(X, y, test_size=test_size, random_state=random_state)
+
+# -----------------------------
+# Custom RMSE scorer
+# -----------------------------
+def multioutput_rmse(y_true, y_pred):
+    return np.sqrt(((y_true - y_pred) ** 2).mean())
+
+from sklearn.metrics import r2_score, mean_squared_error, median_absolute_error
+from geopy.distance import geodesic
+import numpy as np
+
+def evaluate_model(name, model_class, best_params, X_train, y_train, X_test, y_test):
+    """
+    Initialize, fit, predict, and evaluate a model using best hyperparameters.
+
+    Parameters:
+    - name: string, name of model
+    - model_class: class or callable that returns a model
+    - best_params: dict of hyperparameters
+    - X_train, y_train, X_test, y_test: data splits
+
+    Returns:
+    - dict with performance metrics and predictions
+    """
+    print(f"Evaluating {name}...")
+
+    # If model_class is a callable (e.g., lambda), call it to get the estimator
+    model = model_class(**best_params)
+
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+
+    r2 = r2_score(y_test, preds)
+    rmse = mean_squared_error(y_test, preds, squared=False)
+    mae = median_absolute_error(y_test, preds)
+    distances = [geodesic(real, pred).kilometers for real, pred in zip(y_test, preds)]
+    avg_dist = np.mean(distances)
+    se_dist = np.std(distances)
+
+    return {
+        "model": name,
+        "r2": r2,
+        "rmse": rmse,
+        "mae": mae,
+        "avg_km_error": avg_dist,
+        "se_km_error": se_dist,
+        "preds": preds
+    }
+
