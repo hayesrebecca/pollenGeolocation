@@ -16,3 +16,5 @@ dependencies:
   - seaborn
   - jupyter
   - ipykernel
+  - xgboost
+  - tdqm
