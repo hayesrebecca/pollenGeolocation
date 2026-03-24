@@ -15,11 +15,12 @@ First are the cleaned data for analysis (excluding PNW Survey due to privacy agr
  4. y_test.npy: The NumPy array containing the scaled and standardized testing targets (the latitude and longitude of sample origin) with values representing the latitude and longitude of each sample
  5. X_cols_raw.npy: The column names for the raw training dataset, to be used in feature importance calculations
  6. X_cols_tax.npy: The column names for the taxonomically classified training dataset, to be used in feature importance calculations
+ 7. project_test.npy and project_train.npy: The project labels for the training and test data, to be used in visualizations and comparisons
 
 These NumPy arrays will be loaded into the following notebooks for analysis
  1. runTaxonomicClassifiedModels.ipynb and runRawModels.ipynb: these notebooks run hyperparameter grid search and run all models using those hyperparameters, outputting model comparison summary tables
  2. visualizeTaxonomicClassifiedModels.ipynb and visualizeRawModels.ipynb: these notebooks create the main figures for the manuscript, including the sample-by-sample error comparison, real versus predicted scatterplot maps, and the feature importance bar graphs
 
-Additionally, this repo includes the scripts to generate the supplementary figures for the manuscript. These are titled supplementRaw.ipynb and supplementTax.ipynb. 
+Additionally, this repo includes the scripts to generate the supplementary figures for the manuscript. These are titled supplementRaw.ipynb and supplementTax.ipynb. Also, the radar chart figure was created using R in the script radar_chart.R . 
 
 
