@@ -13,6 +13,8 @@ First are the cleaned data for analysis (excluding PNW Survey due to privacy agr
  2. y_train.npy: The NumPy array containing the scaled and standardized training targets (the latitude and longitude of sample origin) with values representing the latitude and longitude of each sample
  3. X_test.npy: The NumPy array containing the scaled and standardized test features (the raw or taxonomically classified RBCL sequences) with values representing the relative abundance of each feature in each sample
  4. y_test.npy: The NumPy array containing the scaled and standardized testing targets (the latitude and longitude of sample origin) with values representing the latitude and longitude of each sample
+ 5. X_cols_raw.npy: The column names for the raw training dataset, to be used in feature importance calculations
+ 6. X_cols_tax.npy: The column names for the taxonomically classified training dataset, to be used in feature importance calculations
 
 These NumPy arrays will be loaded into the following notebooks for analysis
  1. runTaxonomicClassifiedModels.ipynb and runRawModels.ipynb: these notebooks run hyperparameter grid search and run all models using those hyperparameters, outputting model comparison summary tables
