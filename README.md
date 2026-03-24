@@ -30,5 +30,5 @@ Additionally, this repo includes the scripts to generate the supplementary figur
 
 The src folder includes a script that houses any internal functions written for the project. 
 
-
+Finally, the sequencing folder contains the scripts used to process the RBCL sequence data and assign taxonomy, following protocols from Smith, Gordon P., Hamutahl Cohen, Jocelyn F. Zorn, Quinn S. McFrederick, and Lauren C. Ponisio. "Plant–pollinator network architecture does not impact intraspecific microbiome variability." Molecular Ecology 33, no. 7 (2024): e17306.
 
